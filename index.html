@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+            font-weight: lighter;
+
+        }
+
+        body {
+            background-color: #eaeaea;
+            padding-bottom: 3rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        #form {
+            background: rgba(0, 0, 0, 0.15);
+            padding: 0.25rem;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            height: 3rem;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+        }
+
+        #input {
+            border: none;
+            padding: 0 1rem;
+            flex-grow: 1;
+            border-radius: 2rem;
+            margin: 0.25rem;
+        }
+
+        #input:focus {
+            outline: none;
+        }
+
+        #form>button {
+            background: #333;
+            border: none;
+            padding: 0 1rem;
+            margin: 0.25rem;
+            border-radius: 3px;
+            outline: none;
+            color: #fff;
+        }
+
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        div{
+            display: none;
+            position: absolute;
+            top: 0;
+            right: 0;
+            
+            width: 20%;
+            background-color: white;
+            height: 100%;
+            opacity: 0.5;
+        }
+
+        li {
+            padding: 0.5rem 1rem;
+            list-style-type: none;
+            
+        }
+
+        li:nth-child(odd) {
+            background: #efefef;
+        }
+
+        section{
+            max-width: 700px;
+            padding:0;
+            margin:0 auto;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <section>
+      
+            <ul id="message"></ul>
+            <form id="form" action="">
+                <input id="input" autocomplete="off" /><button>Send</button>
+            </form>
+       
+        
+
+    </section>
+    <div class="entrou">
+
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket = io();
+        let nome = prompt('Qual seu nome?');
+        
+    
+        
+
+        let messages = document.getElementById('message');
+        let form = document.getElementById('form');
+        let input = document.getElementById('input');
+
+        socket.emit('new user', nome)
+
+        socket.on('new user', function(data){
+            if(data.success && data.nome != ''){
+                console.log('sucesso');
+            }else{
+                alert('Nome inválido,tente novamente');
+                window.location.href = '/';
+            }
+
+            
+        })
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (input.value) {
+                socket.emit('chat message', {
+                    nome:nome,
+                    msg:input.value
+                })
+                input.value = '';
+            }
+        });
+
+        socket.on('chat message', function (obj) {
+            if (obj.nome == nome) {
+                let item = document.createElement('li');
+                item.style.backgroundColor = 'lightyellow';
+                item.textContent = obj.nome + ': '+ obj.msg;
+                messages.appendChild(item);
+                window.scrollTo(0, document.body.scrollHeight);
+            } else {
+                let item = document.createElement('li');
+                item.style.backgroundColor = 'lightgreen';
+                item.style.textAlign = 'right';
+                item.textContent = obj.nome + ': ' + obj.msg;
+                messages.appendChild(item);
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        });
+
+        socket.on('usu',function(data){
+            let user = document.createElement('span');
+                user.style.display = 'block';
+                user.textContent = data;
+                document.querySelector('.entrou').style.display = 'block';
+                document.querySelector('.entrou').appendChild(user);
+
+
+            setTimeout(function(){
+                document.querySelector('.entrou').style.display = 'none';
+
+                document.querySelector('.entrou').removeChild(user);
+            }, 3000);
+            
+            
+        })
+
+        
+
+    </script>
+</body>
+
+</html>
